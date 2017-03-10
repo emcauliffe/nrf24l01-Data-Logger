@@ -4,15 +4,13 @@
 #include <RF24_config.h>
 #include <Wire.h>
 
-#define CHANNEL 83
+#define CHANNEL 106
 
 #define DATAPIN 4
 #define LATCHPIN 3
 #define CLKPIN 2
 
-uint8_t receivedData;
-uint8_t displayData;
-uint16_t address = 0;
+int8_t receivedData;
 
 RF24 radio(7, 8);
 uint8_t wirelessAddresses[][6] = {"1Node", "2Node"};
@@ -34,28 +32,27 @@ void setup() {
   radio.startListening();
 }
 
-void loop() {
-  receivedData = readWireless();
-  Serial.println(receivedData);
-  displayData = map(receivedData, 0, 255, 0, 8);
-  displayTemp(displayData);
-}
+void loop() {  
 
-uint8_t readWireless() {
-  uint8_t received;
-  while (radio.available()) {
-    radio.read(&received, sizeof(uint8_t));
+  if (radio.available()) {
+    radio.read(&receivedData, 1);
+    Serial.println(receivedData);
+    //EEPROM.write(receivedData(EEPROMAddress, receivedData);
+    displayTemp(map(receivedData, -20, 80, 0, 8));
   }
-  return received;
 }
 
 void displayTemp (uint8_t data) {
   uint8_t shiftData = 0;
+  
   for (uint8_t n = 0; n < data; n ++) {
     shiftData |= (1 << n);
   }
+  
   shiftOut(DATAPIN, CLKPIN, LSBFIRST, shiftData);
   digitalWrite(LATCHPIN, HIGH);
   digitalWrite(LATCHPIN, LOW);
 }
+
+
 

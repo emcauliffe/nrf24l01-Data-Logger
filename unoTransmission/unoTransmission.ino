@@ -1,18 +1,20 @@
 #include <nRF24L01.h>
-#include <printf.h>
 #include <RF24.h>
 #include <RF24_config.h>
+#include <printf.h>
 #include <Wire.h>
 
-#define address 72
 #define CHANNEL 106
+#define TEMPSENSORADDRESS 72
 
-int8_t temp;
+int8_t currentTemp;
 
 RF24 radio(7, 8);
 byte addresses[][6] = {"1Node", "2Node"};
 
 void setup() {
+
+  // initialize libraries
   radio.begin();
   Serial.begin(9600);
   Wire.begin();
@@ -22,30 +24,44 @@ void setup() {
   ADCSRA = ADCSRA & B01111111;
   DIDR0 = DIDR0 | B00111111;
 
+  // set radio settings
   radio.setPALevel(RF24_PA_LOW);
   radio.setChannel(CHANNEL);
 
+  // select addresses to read and write from
   radio.openWritingPipe(addresses[0]);
   radio.openReadingPipe(1, addresses[1]);
+  
 }
+
 void loop() {
-  temp = readTemp();/
-  radio.write(&temp, sizeof(int8_t));
-  powerSave(7);//low power mode for 7 seconds
+  
+  currentTemp = readTemp();
+  radio.write(&currentTemp, sizeof(int8_t));
+  powerSave(6); // enter low power mode for 7 seconds
+  
 }
+
 void powerSave(uint32_t powerOffPeriod) {
-  radio.powerDown();//places wireless chip into ultra low power mode
+  
+  radio.powerDown();
   delay(powerOffPeriod * 1000);
+  
   radio.powerUp();
-  delay(6);//wait for startup
+  delay(6); // delay as radio boots
+  
 }
+
 int8_t readTemp() {
-  //prepare to read from sensor
-  Wire.beginTransmission(address);
+  
+  // prepare wire library to read from temperature sensor
+  Wire.beginTransmission(TEMPSENSORADDRESS);
   Wire.write(0);
   Wire.endTransmission();
-  //read data from sensor
-  Wire.requestFrom(address, 1);
+  
+  // read temperature from sensor
+  Wire.requestFrom(TEMPSENSORADDRESS, 1);
   while (!Wire.available());
   return Wire.read();
+  
 }

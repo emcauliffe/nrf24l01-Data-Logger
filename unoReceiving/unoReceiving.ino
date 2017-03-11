@@ -18,18 +18,23 @@ RF24 radio(7, 8);
 uint8_t wirelessAddresses[][6] = {"1Node", "2Node"};
 
 void setup() {
-  
+
+  // initalize shift register pins
   pinMode(DATAPIN, OUTPUT);
   pinMode(LATCHPIN, OUTPUT);
   pinMode(CLKPIN, OUTPUT);
 
+
+  // initialize libraries
   Wire.begin();
   Serial.begin(9600);
   radio.begin();
 
+  // set radio settings
   radio.setPALevel(RF24_PA_LOW);
   radio.setChannel(CHANNEL);
 
+  // select addresses to read and write from
   radio.openWritingPipe(wirelessAddresses[1]);
   radio.openReadingPipe(1, wirelessAddresses[0]);
   radio.startListening();
@@ -38,6 +43,9 @@ void setup() {
 
 void loop() {
 
+  // whenever a tempature is available
+  // place into eeprom and display it on bargraph
+  
   if (radio.available()) {
     
     radio.read(&receivedData, 1);

@@ -3,7 +3,6 @@
 #include <printf.h>
 #include <RF24.h>
 #include <RF24_config.h>
-#include <Wire.h>
 
 #define CHANNEL 106
 
@@ -23,7 +22,6 @@ void setup() {
   pinMode(LATCHPIN, OUTPUT);
   pinMode(CLKPIN, OUTPUT);
 
-  Wire.begin();
   Serial.begin(9600);
   radio.begin();
 
@@ -38,6 +36,7 @@ void loop() {
   if (radio.available()) {
     radio.read(&receivedData, 1);
     Serial.println(receivedData);
+    EEPROM.write(EEPROMAddress, receivedData);//write temperature to eeprom
     EEPROMAddress++;
     displayTemp(map(receivedData, -20, 80, 0, 8));//maps temperatures from -20C to 80C on the bar graph
   }

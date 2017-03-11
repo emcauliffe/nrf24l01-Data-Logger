@@ -12,7 +12,7 @@
 #define CLKPIN 2
 
 int8_t receivedData;
-int8_t eepromAddress;
+uint8_t eepromAddress;
 
 RF24 radio(7, 8);
 uint8_t wirelessAddresses[][6] = {"1Node", "2Node"};
